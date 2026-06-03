@@ -55,7 +55,6 @@
     }
 
     .hero,
-    .utility-panel,
     .manage-panel,
     .record,
     dialog {
@@ -69,6 +68,10 @@
       padding: 14px;
       position: relative;
       overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+      align-items: center;
+      gap: 14px;
     }
 
     .hero:after {
@@ -85,22 +88,8 @@
       opacity: 0.45;
     }
 
-    .kicker {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 26px;
-      padding: 0 9px;
-      border: 2px solid var(--ink);
-      background: var(--yellow);
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 900;
-      margin-bottom: 10px;
-    }
-
     h1 {
-      margin: 0;
+      margin: 12px 0 0;
       max-width: 760px;
       font-family: var(--serif);
       font-size: clamp(26px, 3.5vw, 40px);
@@ -118,16 +107,10 @@
       z-index: 1;
     }
 
-    .utility-panel,
     .manage-panel {
       padding: 10px;
       display: grid;
       gap: 10px;
-    }
-
-    .utility-panel {
-      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.55fr);
-      align-items: center;
     }
 
     .stat-grid {
@@ -170,6 +153,10 @@
       color: white;
       text-decoration: none;
       width: fit-content;
+      min-height: 52px;
+      padding: 0 18px;
+      font-size: 15px;
+      box-shadow: 5px 5px 0 var(--ink);
     }
 
     .voice-box {
@@ -177,6 +164,8 @@
       border-radius: var(--radius);
       background: white;
       padding: 9px;
+      position: relative;
+      z-index: 1;
     }
 
     .voice-box label {
@@ -549,7 +538,7 @@
     }
 
     @media (max-width: 820px) {
-      .utility-panel,
+      .hero,
       .form-grid {
         grid-template-columns: 1fr;
       }
@@ -599,13 +588,11 @@
   <main class="wrap">
     <section class="top" aria-label="页面概览">
       <div class="hero">
-        <a class="btn practice-link" href="https://docs.qq.com/aio/DZHZOWWJHT1F5RGFV" target="_blank" rel="noopener">AI驱动的英语听说练习</a>
-        <div class="kicker">Every 5 Hours · 3 Sentences</div>
-        <h1>三句英语，随时听读。</h1>
-        <p>按时间记录中英对照句子，重点放在听读、复习和分享。</p>
-      </div>
-
-      <aside class="utility-panel" aria-label="发音设置">
+        <div>
+          <a class="btn practice-link" href="https://docs.qq.com/aio/DZHZOWWJHT1F5RGFV" target="_blank" rel="noopener">AI驱动的英语听说练习</a>
+          <h1>三句英语，随时听读。</h1>
+          <p>按时间记录中英对照句子，重点放在听读、复习和分享。</p>
+        </div>
         <div class="voice-box">
           <label>
             发音声音
@@ -615,7 +602,7 @@
           </label>
           <small>只显示 2-3 个更自然的美式/英语声音，减少机械感。</small>
         </div>
-      </aside>
+      </div>
     </section>
 
     <section class="records" id="records" aria-live="polite"></section>
@@ -1127,21 +1114,33 @@
       ctx.lineTo(990, 1154);
       ctx.stroke();
 
-      ctx.fillStyle = "#151515";
-      ctx.font = "800 28px Avenir Next, PingFang SC, sans-serif";
-      ctx.fillText("Scan to open the page", 90, 1228);
-
       const qrImage = await loadImage(makeQrDataUrl(PAGE_URL, 8));
       ctx.fillStyle = "#ffffff";
       ctx.strokeStyle = "#151515";
       ctx.lineWidth = 5;
       roundRect(ctx, 840, 1170, 120, 120, 8, true, true);
       ctx.drawImage(qrImage, 850, 1180, 100, 100);
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!blob) return;
+      const file = new File([blob], `english-quote-${Date.now()}.png`, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: "English Quote Log",
+            text: "保存这张英语句子分享图"
+          });
+          return;
+        } catch (error) {
+          if (error.name === "AbortError") return;
+        }
+      }
 
       const link = document.createElement("a");
-      link.download = `english-quote-${Date.now()}.png`;
-      link.href = canvas.toDataURL("image/png");
+      link.download = file.name;
+      link.href = URL.createObjectURL(blob);
       link.click();
+      URL.revokeObjectURL(link.href);
     }
 
     function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
