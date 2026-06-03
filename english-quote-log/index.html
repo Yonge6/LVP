@@ -161,6 +161,12 @@
       gap: 10px;
     }
 
+    .practice-link {
+      background: var(--blue);
+      color: white;
+      text-decoration: none;
+    }
+
     .voice-box {
       border: 2px solid var(--ink);
       border-radius: var(--radius);
@@ -291,6 +297,12 @@
       background: rgba(255,255,255,0.55);
     }
 
+    .quote-actions {
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
     .quote:last-child { border-bottom: 0; }
 
     .icon-btn {
@@ -365,6 +377,10 @@
       padding: 0;
     }
 
+    #shareDialog {
+      width: min(560px, calc(100% - 24px));
+    }
+
     dialog::backdrop {
       background: rgba(21,21,21,0.45);
       backdrop-filter: blur(4px);
@@ -430,6 +446,98 @@
       padding-top: 4px;
     }
 
+    .share-body {
+      padding: 18px;
+      background: var(--paper);
+    }
+
+    .share-card {
+      min-height: 620px;
+      border: 2px solid var(--ink);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(145deg, rgba(239,195,90,0.26), transparent 35%),
+        linear-gradient(315deg, rgba(47,109,85,0.18), transparent 38%),
+        var(--paper-strong);
+      box-shadow: 7px 7px 0 var(--ink);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 26px;
+    }
+
+    .share-card .share-kicker {
+      display: inline-flex;
+      width: fit-content;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      background: var(--yellow);
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .share-english {
+      margin: 18px 0 0;
+      font-family: var(--serif);
+      font-size: clamp(28px, 5vw, 42px);
+      line-height: 1.16;
+    }
+
+    .share-chinese {
+      margin: 18px 0 0;
+      color: var(--green-dark);
+      font-size: 18px;
+      line-height: 1.6;
+      font-weight: 800;
+    }
+
+    .share-source {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .share-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 18px;
+      border-top: 2px solid var(--ink);
+      padding-top: 18px;
+    }
+
+    .share-brand {
+      font-weight: 900;
+    }
+
+    .share-url {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .share-qr {
+      width: 112px;
+      height: 112px;
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      background: white;
+      padding: 6px;
+      flex: 0 0 auto;
+    }
+
+    .share-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
     .sr-only {
       position: absolute;
       width: 1px;
@@ -477,6 +585,16 @@
         align-items: start;
         flex-direction: column;
       }
+
+      .share-card {
+        min-height: 560px;
+        padding: 22px;
+      }
+
+      .share-bottom {
+        align-items: start;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
@@ -501,6 +619,7 @@
           </div>
         </div>
         <div class="toolbar">
+          <a class="btn practice-link" href="https://docs.qq.com/aio/DZHZOWWJHT1F5RGFV" target="_blank" rel="noopener">AI驱动的英语听说练习</a>
           <button class="btn primary" id="addRecordBtn" type="button">新增记录</button>
           <button class="btn" id="exportBtn" type="button">导出</button>
           <button class="btn" id="importBtn" type="button">导入</button>
@@ -593,9 +712,39 @@
     </form>
   </dialog>
 
+  <dialog id="shareDialog">
+    <div class="dialog-head">
+      <h3>分享图片</h3>
+      <button class="icon-btn stop" id="closeShareBtn" type="button" title="关闭" aria-label="关闭">×</button>
+    </div>
+    <div class="share-body">
+      <div class="share-card" id="shareCard">
+        <div>
+          <div class="share-kicker">English Quote Log</div>
+          <p class="share-english" id="shareEnglish"></p>
+          <p class="share-chinese" id="shareChinese"></p>
+          <p class="share-source" id="shareSource"></p>
+        </div>
+        <div class="share-bottom">
+          <div>
+            <div class="share-brand">Elian Design</div>
+            <div class="share-url" id="shareUrl"></div>
+          </div>
+          <img class="share-qr" id="shareQr" alt="网页链接二维码">
+        </div>
+      </div>
+      <div class="share-actions">
+        <button class="btn" id="copyPageLinkBtn" type="button">复制网页链接</button>
+        <button class="btn primary" id="copyQuoteBtn" type="button">复制句子</button>
+      </div>
+    </div>
+  </dialog>
+
   <script>
     const STORAGE_KEY = "english-quote-log-v1";
     const VOICE_KEY = "english-quote-log-voice-v1";
+    const PAGE_URL = "https://yonge6.github.io/Design/english-quote-log/";
+    const QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data=${encodeURIComponent(PAGE_URL)}`;
     const preferredVoiceWords = [
       "samantha",
       "ava",
@@ -664,9 +813,16 @@
     const form = document.querySelector("#recordForm");
     const importFile = document.querySelector("#importFile");
     const voiceSelect = document.querySelector("#voiceSelect");
+    const shareDialog = document.querySelector("#shareDialog");
+    const shareEnglish = document.querySelector("#shareEnglish");
+    const shareChinese = document.querySelector("#shareChinese");
+    const shareSource = document.querySelector("#shareSource");
+    const shareUrl = document.querySelector("#shareUrl");
+    const shareQr = document.querySelector("#shareQr");
 
     let records = loadRecords();
     let voices = [];
+    let activeShareQuote = null;
 
     function loadRecords() {
       try {
@@ -719,7 +875,10 @@
           const row = document.createElement("div");
           row.className = "quote";
           row.innerHTML = `
-            <button class="icon-btn play-btn" type="button" title="朗读英文 ${index + 1}" aria-label="朗读英文 ${index + 1}">▶</button>
+            <div class="quote-actions">
+              <button class="icon-btn play-btn" type="button" title="朗读英文 ${index + 1}" aria-label="朗读英文 ${index + 1}">▶</button>
+              <button class="icon-btn share-btn" type="button" title="生成分享图片 ${index + 1}" aria-label="生成分享图片 ${index + 1}">↗</button>
+            </div>
             <div>
               <p class="english">${escapeHtml(quote.english)}</p>
               <p class="translation">${escapeHtml(quote.chinese)}</p>
@@ -727,6 +886,7 @@
             </div>
           `;
           row.querySelector(".play-btn").addEventListener("click", () => speakEnglish(quote.english));
+          row.querySelector(".share-btn").addEventListener("click", () => openShareDialog(quote));
           list.appendChild(row);
         });
 
@@ -816,6 +976,46 @@
       window.speechSynthesis.speak(utterance);
     }
 
+    function openShareDialog(quote) {
+      activeShareQuote = quote;
+      shareEnglish.textContent = quote.english;
+      shareChinese.textContent = quote.chinese;
+      shareSource.textContent = `(${quote.source})`;
+      shareUrl.textContent = PAGE_URL;
+      shareQr.src = QR_URL;
+      shareDialog.showModal();
+    }
+
+    function closeShareDialog() {
+      shareDialog.close();
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (error) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+    }
+
+    function shareQuoteText() {
+      if (!activeShareQuote) return "";
+      return [
+        activeShareQuote.english,
+        activeShareQuote.chinese,
+        `(${activeShareQuote.source})`,
+        PAGE_URL
+      ].join("\n");
+    }
+
     function escapeHtml(value) {
       return String(value)
         .replaceAll("&", "&amp;")
@@ -899,10 +1099,13 @@
 
     document.querySelector("#addRecordBtn").addEventListener("click", openDialog);
     document.querySelector("#closeDialogBtn").addEventListener("click", closeDialog);
+    document.querySelector("#closeShareBtn").addEventListener("click", closeShareDialog);
     document.querySelector("#cancelBtn").addEventListener("click", closeDialog);
     document.querySelector("#exportBtn").addEventListener("click", exportRecords);
     document.querySelector("#importBtn").addEventListener("click", () => importFile.click());
     document.querySelector("#resetBtn").addEventListener("click", resetRecords);
+    document.querySelector("#copyPageLinkBtn").addEventListener("click", () => copyText(PAGE_URL));
+    document.querySelector("#copyQuoteBtn").addEventListener("click", () => copyText(shareQuoteText()));
     voiceSelect.addEventListener("change", () => {
       if (voiceSelect.value) localStorage.setItem(VOICE_KEY, voiceSelect.value);
       else localStorage.removeItem(VOICE_KEY);
