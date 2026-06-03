@@ -37,7 +37,7 @@
       letter-spacing: 0;
     }
 
-    button, input, textarea {
+    button, input, textarea, select {
       font: inherit;
       letter-spacing: 0;
     }
@@ -159,6 +159,25 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
+    }
+
+    .voice-box {
+      border: 2px solid var(--ink);
+      border-radius: var(--radius);
+      background: white;
+      padding: 12px;
+    }
+
+    .voice-box label {
+      margin: 0;
+    }
+
+    .voice-box small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
     }
 
     .btn,
@@ -362,7 +381,8 @@
     }
 
     input,
-    textarea {
+    textarea,
+    select {
       width: 100%;
       border: 2px solid var(--ink);
       border-radius: var(--radius);
@@ -464,6 +484,15 @@
           <button class="btn warn" id="resetBtn" type="button">重置</button>
           <input class="sr-only" id="importFile" type="file" accept="application/json">
         </div>
+        <div class="voice-box">
+          <label>
+            发音声音
+            <select id="voiceSelect" aria-label="选择英文朗读声音">
+              <option value="">自动选择美式自然发音</option>
+            </select>
+          </label>
+          <small>优先选择更自然的美式英语声音。播放仍只朗读英文原句。</small>
+        </div>
       </aside>
     </section>
 
@@ -539,6 +568,19 @@
 
   <script>
     const STORAGE_KEY = "english-quote-log-v1";
+    const VOICE_KEY = "english-quote-log-voice-v1";
+    const preferredVoiceWords = [
+      "samantha",
+      "ava",
+      "allison",
+      "susan",
+      "victoria",
+      "alex",
+      "google us english",
+      "microsoft aria",
+      "microsoft jenny",
+      "zira"
+    ];
 
     const seedRecords = [
       {
@@ -592,8 +634,10 @@
     const dialog = document.querySelector("#recordDialog");
     const form = document.querySelector("#recordForm");
     const importFile = document.querySelector("#importFile");
+    const voiceSelect = document.querySelector("#voiceSelect");
 
     let records = loadRecords();
+    let voices = [];
 
     function loadRecords() {
       try {
@@ -662,6 +706,55 @@
       });
     }
 
+    function isEnglishVoice(voice) {
+      return voice.lang && voice.lang.toLowerCase().startsWith("en");
+    }
+
+    function scoreVoice(voice) {
+      const name = voice.name.toLowerCase();
+      const lang = voice.lang.toLowerCase();
+      const preferredIndex = preferredVoiceWords.findIndex((word) => name.includes(word));
+      let score = 0;
+      if (lang === "en-us") score += 80;
+      else if (lang.startsWith("en-")) score += 40;
+      if (preferredIndex >= 0) score += 120 - preferredIndex * 8;
+      if (voice.localService) score += 8;
+      return score;
+    }
+
+    function getBestVoice() {
+      const savedName = localStorage.getItem(VOICE_KEY);
+      const saved = voices.find((voice) => voice.name === savedName);
+      if (saved) return saved;
+      return voices.filter(isEnglishVoice).sort((a, b) => scoreVoice(b) - scoreVoice(a))[0] || null;
+    }
+
+    function populateVoices() {
+      if (!("speechSynthesis" in window)) {
+        voiceSelect.disabled = true;
+        return;
+      }
+      voices = window.speechSynthesis.getVoices().filter(isEnglishVoice);
+      const savedName = localStorage.getItem(VOICE_KEY);
+      const best = getBestVoice();
+      voiceSelect.innerHTML = '<option value="">自动选择美式自然发音</option>';
+
+      voices
+        .sort((a, b) => scoreVoice(b) - scoreVoice(a) || a.name.localeCompare(b.name))
+        .forEach((voice) => {
+          const option = document.createElement("option");
+          option.value = voice.name;
+          option.textContent = `${voice.name} · ${voice.lang}`;
+          voiceSelect.appendChild(option);
+        });
+
+      if (savedName && voices.some((voice) => voice.name === savedName)) {
+        voiceSelect.value = savedName;
+      } else if (best) {
+        voiceSelect.value = "";
+      }
+    }
+
     function speakEnglish(text) {
       if (!("speechSynthesis" in window)) {
         alert("当前浏览器不支持朗读。请用 Chrome、Safari 或 Edge 打开。");
@@ -670,9 +763,10 @@
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "en-US";
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      const voice = window.speechSynthesis.getVoices().find((item) => item.lang.startsWith("en"));
+      utterance.rate = 0.86;
+      utterance.pitch = 0.96;
+      utterance.volume = 1;
+      const voice = getBestVoice();
       if (voice) utterance.voice = voice;
       window.speechSynthesis.speak(utterance);
     }
@@ -764,6 +858,10 @@
     document.querySelector("#exportBtn").addEventListener("click", exportRecords);
     document.querySelector("#importBtn").addEventListener("click", () => importFile.click());
     document.querySelector("#resetBtn").addEventListener("click", resetRecords);
+    voiceSelect.addEventListener("change", () => {
+      if (voiceSelect.value) localStorage.setItem(VOICE_KEY, voiceSelect.value);
+      else localStorage.removeItem(VOICE_KEY);
+    });
     importFile.addEventListener("change", (event) => {
       const [file] = event.target.files;
       if (file) importRecords(file);
@@ -771,6 +869,10 @@
     });
     form.addEventListener("submit", handleSubmit);
 
+    populateVoices();
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.addEventListener("voiceschanged", populateVoices);
+    }
     render();
   </script>
 </body>
