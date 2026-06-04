@@ -954,6 +954,7 @@
     const VISITOR_KEY = "english-quote-log-visitor-v1";
     const SESSION_KEY = "english-quote-log-session-v1";
     const GLOBAL_USER_COUNTED_KEY = "english-quote-log-global-user-counted-v1";
+    const GLOBAL_USER_NUMBER_KEY = "english-quote-log-global-user-number-v1";
     const GLOBAL_ANALYTICS = {
       enabled: true,
       baseUrl: "https://api.counterapi.dev/v1",
@@ -1301,14 +1302,27 @@
       if (counterName) globalCounterUp(counterName);
     }
 
-    function trackGlobalSession(session) {
-      if (!GLOBAL_ANALYTICS.enabled) return;
-      if (!localStorage.getItem(GLOBAL_USER_COUNTED_KEY)) {
-        globalCounterUp("users");
+    async function ensureGlobalUserNumber() {
+      const savedNumber = Number(localStorage.getItem(GLOBAL_USER_NUMBER_KEY));
+      if (savedNumber > 0) return savedNumber;
+      const userNumber = await globalCounterUp("users");
+      if (userNumber > 0) {
+        localStorage.setItem(GLOBAL_USER_NUMBER_KEY, String(userNumber));
         localStorage.setItem(GLOBAL_USER_COUNTED_KEY, "1");
       }
+      return userNumber;
+    }
+
+    async function trackGlobalSession(session) {
+      if (!GLOBAL_ANALYTICS.enabled) return;
+      const userNumber = await ensureGlobalUserNumber();
+      if (userNumber) session.globalUserNumber = userNumber;
       if (!session.globalCounted) {
         globalCounterUp("sessions");
+        if (userNumber) {
+          globalCounterUp(`user_${userNumber}_sessions`);
+          globalCounterSet(`user_${userNumber}_last_session_seconds`, 0);
+        }
         session.globalCounted = true;
         saveSession(session);
       }
@@ -1318,7 +1332,26 @@
       if (!GLOBAL_ANALYTICS.enabled) return null;
       const names = ["users", "sessions", "duration_seconds", "plays", "random", "shares", "saves"];
       const values = await Promise.all(names.map((name) => globalCounterGet(name)));
-      return Object.fromEntries(names.map((name, index) => [name, values[index]]));
+      const stats = Object.fromEntries(names.map((name, index) => [name, values[index]]));
+      const userCount = Math.min(stats.users || 0, 50);
+      const users = await Promise.all(
+        Array.from({ length: userCount }, async (_, index) => {
+          const number = index + 1;
+          const [sessions, totalSeconds, lastSessionSeconds] = await Promise.all([
+            globalCounterGet(`user_${number}_sessions`),
+            globalCounterGet(`user_${number}_duration_seconds`),
+            globalCounterGet(`user_${number}_last_session_seconds`)
+          ]);
+          return {
+            number,
+            sessions,
+            totalSeconds,
+            lastSessionSeconds
+          };
+        })
+      );
+      stats.usersDetail = users.filter((user) => user.sessions || user.totalSeconds || user.lastSessionSeconds);
+      return stats;
     }
 
     function startAnalyticsSession() {
@@ -1362,6 +1395,11 @@
         data.lastVisit = now.toISOString();
         saveAnalytics(data);
         globalCounterAdd("duration_seconds", deltaSeconds);
+        const userNumber = session.globalUserNumber || Number(localStorage.getItem(GLOBAL_USER_NUMBER_KEY));
+        if (userNumber) {
+          globalCounterAdd(`user_${userNumber}_duration_seconds`, deltaSeconds);
+          globalCounterSet(`user_${userNumber}_last_session_seconds`, getCurrentSessionSeconds());
+        }
       }
       session.lastSyncedAt = now.toISOString();
       saveSession(session);
@@ -1431,11 +1469,21 @@
       ].join("");
 
       const selectedVoice = voiceSelect.selectedOptions[0]?.textContent || "音色选择";
+      const currentUserNumber = Number(localStorage.getItem(GLOBAL_USER_NUMBER_KEY));
+      const userRows = (global.usersDetail || []).map((user) => ({
+        label: `用户 ${user.number}${user.number === currentUserNumber ? "（我）" : ""}`,
+        value: `单次 ${formatDuration(user.lastSessionSeconds)} · 合计 ${formatDuration(user.totalSeconds)} · 人次 ${formatNumber(user.sessions)}`
+      }));
       const rows = [
         {
           label: "数据范围",
           value: globalStats ? "公开全站数据 + 当前浏览器明细" : "正在读取全站数据，先显示当前浏览器数据"
         },
+        {
+          label: "用户明细",
+          value: globalStats ? `已区分 ${formatNumber(global.usersDetail?.length || 0)} 个公开用户编号` : "读取中"
+        },
+        ...userRows,
         {
           label: "当前音色",
           value: selectedVoice
