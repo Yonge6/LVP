@@ -953,6 +953,12 @@
     const ANALYTICS_KEY = "english-quote-log-analytics-v1";
     const VISITOR_KEY = "english-quote-log-visitor-v1";
     const SESSION_KEY = "english-quote-log-session-v1";
+    const GLOBAL_USER_COUNTED_KEY = "english-quote-log-global-user-counted-v1";
+    const GLOBAL_ANALYTICS = {
+      enabled: true,
+      baseUrl: "https://api.counterapi.dev/v1",
+      namespace: "elian-english-quote-log"
+    };
     const PAGE_URL = "https://yonge6.github.io/Design/english-quote-log/";
     const analyticsLabels = {
       visit: "访问",
@@ -1206,6 +1212,94 @@
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
     }
 
+    function globalCounterUrl(name, action = "") {
+      const encodedNamespace = encodeURIComponent(GLOBAL_ANALYTICS.namespace);
+      const encodedName = encodeURIComponent(name);
+      return `${GLOBAL_ANALYTICS.baseUrl}/${encodedNamespace}/${encodedName}/${action}`;
+    }
+
+    async function globalCounterGet(name) {
+      if (!GLOBAL_ANALYTICS.enabled) return 0;
+      try {
+        const response = await fetch(globalCounterUrl(name));
+        if (!response.ok) return 0;
+        const data = await response.json();
+        return Number(data.count) || 0;
+      } catch (error) {
+        console.warn("Failed to read global analytics", error);
+        return 0;
+      }
+    }
+
+    async function globalCounterUp(name) {
+      if (!GLOBAL_ANALYTICS.enabled) return 0;
+      try {
+        const response = await fetch(globalCounterUrl(name, "up"));
+        if (!response.ok) return 0;
+        const data = await response.json();
+        return Number(data.count) || 0;
+      } catch (error) {
+        console.warn("Failed to update global analytics", error);
+        return 0;
+      }
+    }
+
+    async function globalCounterSet(name, count) {
+      if (!GLOBAL_ANALYTICS.enabled) return 0;
+      try {
+        const response = await fetch(`${globalCounterUrl(name, "set")}?count=${Math.max(0, Math.round(count))}`);
+        if (!response.ok) return 0;
+        const data = await response.json();
+        return Number(data.count) || 0;
+      } catch (error) {
+        console.warn("Failed to set global analytics", error);
+        return 0;
+      }
+    }
+
+    async function globalCounterAdd(name, delta) {
+      if (!delta) return 0;
+      const current = await globalCounterGet(name);
+      return globalCounterSet(name, current + delta);
+    }
+
+    function trackGlobalEvent(type) {
+      const counterMap = {
+        play: "plays",
+        random: "random",
+        share: "shares",
+        save: "saves",
+        copy: "copies",
+        add: "adds",
+        export: "exports",
+        import: "imports",
+        reset: "resets",
+        voice: "voice_changes"
+      };
+      const counterName = counterMap[type];
+      if (counterName) globalCounterUp(counterName);
+    }
+
+    function trackGlobalSession(session) {
+      if (!GLOBAL_ANALYTICS.enabled) return;
+      if (!localStorage.getItem(GLOBAL_USER_COUNTED_KEY)) {
+        globalCounterUp("users");
+        localStorage.setItem(GLOBAL_USER_COUNTED_KEY, "1");
+      }
+      if (!session.globalCounted) {
+        globalCounterUp("sessions");
+        session.globalCounted = true;
+        saveSession(session);
+      }
+    }
+
+    async function loadGlobalStats() {
+      if (!GLOBAL_ANALYTICS.enabled) return null;
+      const names = ["users", "sessions", "duration_seconds", "plays", "random", "shares", "saves"];
+      const values = await Promise.all(names.map((name) => globalCounterGet(name)));
+      return Object.fromEntries(names.map((name, index) => [name, values[index]]));
+    }
+
     function startAnalyticsSession() {
       const data = loadAnalytics();
       getVisitorId(data);
@@ -1232,6 +1326,7 @@
         saveAnalytics(data);
       }
       saveSession(session);
+      trackGlobalSession(session);
     }
 
     function syncSessionDuration() {
@@ -1245,6 +1340,7 @@
         data.totalDurationSeconds = (data.totalDurationSeconds || 0) + deltaSeconds;
         data.lastVisit = now.toISOString();
         saveAnalytics(data);
+        globalCounterAdd("duration_seconds", deltaSeconds);
       }
       session.lastSyncedAt = now.toISOString();
       saveSession(session);
@@ -1266,6 +1362,7 @@
         ...data.recent
       ].slice(0, 80);
       saveAnalytics(data);
+      trackGlobalEvent(type);
     }
 
     function formatNumber(value) {
@@ -1297,24 +1394,26 @@
       `;
     }
 
-    function renderAnalytics() {
+    function renderAnalytics(globalStats = null) {
       syncSessionDuration();
       const data = loadAnalytics();
       const counters = data.counters || {};
+      const global = globalStats || {};
+      const shareSaveCount = (global.shares ?? counters.share ?? 0) + (global.saves ?? counters.save ?? 0);
       analyticsGrid.innerHTML = [
-        metricTemplate("用户人数", formatNumber(data.userId ? 1 : 0)),
-        metricTemplate("使用人次", formatNumber(data.sessionCount || counters.visit || 0)),
+        metricTemplate("用户人数", formatNumber(global.users ?? (data.userId ? 1 : 0))),
+        metricTemplate("使用人次", formatNumber(global.sessions ?? data.sessionCount ?? counters.visit ?? 0)),
         metricTemplate("本次时长", formatDuration(getCurrentSessionSeconds())),
-        metricTemplate("合计时长", formatDuration(data.totalDurationSeconds || 0)),
-        metricTemplate("朗读次数", formatNumber(counters.play)),
-        metricTemplate("分享/保存", formatNumber((counters.share || 0) + (counters.save || 0)))
+        metricTemplate("合计时长", formatDuration(global.duration_seconds ?? data.totalDurationSeconds ?? 0)),
+        metricTemplate("朗读次数", formatNumber(global.plays ?? counters.play)),
+        metricTemplate("分享/保存", formatNumber(shareSaveCount))
       ].join("");
 
       const selectedVoice = voiceSelect.selectedOptions[0]?.textContent || "音色选择";
       const rows = [
         {
           label: "数据范围",
-          value: "当前浏览器本机数据；接入后端后可汇总全站用户"
+          value: globalStats ? "公开全站数据 + 当前浏览器明细" : "正在读取全站数据，先显示当前浏览器数据"
         },
         {
           label: "当前音色",
@@ -1322,7 +1421,7 @@
         },
         {
           label: "随机选择",
-          value: `${formatNumber(counters.random)} 次`
+          value: `${formatNumber(global.random ?? counters.random)} 次`
         },
         {
           label: "句子总数",
@@ -1353,6 +1452,9 @@
     function openAnalyticsDialog() {
       renderAnalytics();
       analyticsDialog.showModal();
+      loadGlobalStats().then((stats) => {
+        renderAnalytics(stats);
+      });
     }
 
     function sortedRecords() {
