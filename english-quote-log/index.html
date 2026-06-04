@@ -712,12 +712,6 @@
       color: var(--muted);
     }
 
-    .analytics-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
 
     .sr-only {
       position: absolute;
@@ -949,9 +943,6 @@
     <div class="analytics-body">
       <div class="analytics-grid" id="analyticsGrid"></div>
       <div class="analytics-list" id="analyticsList"></div>
-      <div class="analytics-actions">
-        <button class="btn warn" id="clearAnalyticsBtn" type="button">清除数据</button>
-      </div>
     </div>
   </dialog>
 
@@ -960,6 +951,8 @@
     const STORAGE_KEY = "english-quote-log-v1";
     const VOICE_KEY = "english-quote-log-voice-v1";
     const ANALYTICS_KEY = "english-quote-log-analytics-v1";
+    const VISITOR_KEY = "english-quote-log-visitor-v1";
+    const SESSION_KEY = "english-quote-log-session-v1";
     const PAGE_URL = "https://yonge6.github.io/Design/english-quote-log/";
     const analyticsLabels = {
       visit: "访问",
@@ -1152,6 +1145,9 @@
       return {
         firstVisit: now,
         lastVisit: now,
+        userId: "",
+        sessionCount: 0,
+        totalDurationSeconds: 0,
         counters: {},
         recent: []
       };
@@ -1178,7 +1174,84 @@
       localStorage.setItem(ANALYTICS_KEY, JSON.stringify(data));
     }
 
+    function createId(prefix) {
+      const value = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      return `${prefix}-${value}`;
+    }
+
+    function getVisitorId(data = loadAnalytics()) {
+      let visitorId = localStorage.getItem(VISITOR_KEY) || data.userId;
+      if (!visitorId) {
+        visitorId = createId("visitor");
+        localStorage.setItem(VISITOR_KEY, visitorId);
+      }
+      if (data.userId !== visitorId) {
+        data.userId = visitorId;
+        saveAnalytics(data);
+      }
+      return visitorId;
+    }
+
+    function getSession() {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+        if (saved && saved.id && saved.startedAt) return saved;
+      } catch (error) {
+        console.warn("Failed to load session", error);
+      }
+      return null;
+    }
+
+    function saveSession(session) {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    }
+
+    function startAnalyticsSession() {
+      const data = loadAnalytics();
+      getVisitorId(data);
+      const now = new Date().toISOString();
+      let session = getSession();
+      if (!session) {
+        session = {
+          id: createId("session"),
+          startedAt: now,
+          lastSyncedAt: now
+        };
+        data.sessionCount = (data.sessionCount || 0) + 1;
+        data.counters.visit = (data.counters.visit || 0) + 1;
+        data.lastVisit = now;
+        data.recent = [
+          {
+            type: "visit",
+            label: analyticsLabels.visit,
+            detail: "打开页面",
+            at: now
+          },
+          ...data.recent
+        ].slice(0, 80);
+        saveAnalytics(data);
+      }
+      saveSession(session);
+    }
+
+    function syncSessionDuration() {
+      const session = getSession();
+      if (!session) return;
+      const now = new Date();
+      const lastSyncedAt = new Date(session.lastSyncedAt || session.startedAt);
+      const deltaSeconds = Math.max(0, Math.round((now.getTime() - lastSyncedAt.getTime()) / 1000));
+      if (deltaSeconds > 0 && deltaSeconds < 3600) {
+        const data = loadAnalytics();
+        data.totalDurationSeconds = (data.totalDurationSeconds || 0) + deltaSeconds;
+        data.lastVisit = now.toISOString();
+        saveAnalytics(data);
+      }
+      session.lastSyncedAt = now.toISOString();
+      saveSession(session);
+    }
+
     function trackEvent(type, detail = "") {
+      syncSessionDuration();
       const data = loadAnalytics();
       const now = new Date().toISOString();
       data.lastVisit = now;
@@ -1199,32 +1272,61 @@
       return new Intl.NumberFormat("zh-CN").format(value || 0);
     }
 
+    function formatDuration(seconds = 0) {
+      const total = Math.max(0, Math.round(seconds));
+      const hours = Math.floor(total / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const secs = total % 60;
+      if (hours) return `${hours}小时${minutes}分`;
+      if (minutes) return `${minutes}分${secs}秒`;
+      return `${secs}秒`;
+    }
+
+    function getCurrentSessionSeconds() {
+      const session = getSession();
+      if (!session) return 0;
+      return Math.max(0, Math.round((Date.now() - new Date(session.startedAt).getTime()) / 1000));
+    }
+
     function metricTemplate(label, value) {
       return `
         <div class="metric">
           <span>${escapeHtml(label)}</span>
-          <strong>${escapeHtml(formatNumber(value))}</strong>
+          <strong>${escapeHtml(value)}</strong>
         </div>
       `;
     }
 
     function renderAnalytics() {
+      syncSessionDuration();
       const data = loadAnalytics();
       const counters = data.counters || {};
       analyticsGrid.innerHTML = [
-        metricTemplate("访问次数", counters.visit),
-        metricTemplate("朗读次数", counters.play),
-        metricTemplate("随机选择", counters.random),
-        metricTemplate("分享图片", counters.share),
-        metricTemplate("保存图片", counters.save),
-        metricTemplate("句子总数", allQuotes().length)
+        metricTemplate("用户人数", formatNumber(data.userId ? 1 : 0)),
+        metricTemplate("使用人次", formatNumber(data.sessionCount || counters.visit || 0)),
+        metricTemplate("本次时长", formatDuration(getCurrentSessionSeconds())),
+        metricTemplate("合计时长", formatDuration(data.totalDurationSeconds || 0)),
+        metricTemplate("朗读次数", formatNumber(counters.play)),
+        metricTemplate("分享/保存", formatNumber((counters.share || 0) + (counters.save || 0)))
       ].join("");
 
       const selectedVoice = voiceSelect.selectedOptions[0]?.textContent || "音色选择";
       const rows = [
         {
+          label: "数据范围",
+          value: "当前浏览器本机数据；接入后端后可汇总全站用户"
+        },
+        {
           label: "当前音色",
           value: selectedVoice
+        },
+        {
+          label: "随机选择",
+          value: `${formatNumber(counters.random)} 次`
+        },
+        {
+          label: "句子总数",
+          value: `${formatNumber(allQuotes().length)} 句`
         },
         {
           label: "首次访问",
@@ -1251,13 +1353,6 @@
     function openAnalyticsDialog() {
       renderAnalytics();
       analyticsDialog.showModal();
-    }
-
-    function clearAnalytics() {
-      if (!confirm("确定清除本机使用数据吗？")) return;
-      localStorage.removeItem(ANALYTICS_KEY);
-      trackEvent("visit", "数据重置后");
-      renderAnalytics();
     }
 
     function sortedRecords() {
@@ -1720,7 +1815,6 @@
     document.querySelector("#closeShareBtn").addEventListener("click", closeShareDialog);
     document.querySelector("#analyticsBtn").addEventListener("click", openAnalyticsDialog);
     document.querySelector("#closeAnalyticsBtn").addEventListener("click", () => analyticsDialog.close());
-    document.querySelector("#clearAnalyticsBtn").addEventListener("click", clearAnalytics);
     document.querySelector("#cancelBtn").addEventListener("click", closeDialog);
     document.querySelector("#exportBtn").addEventListener("click", exportRecords);
     document.querySelector("#importBtn").addEventListener("click", () => importFile.click());
@@ -1749,7 +1843,12 @@
     });
     form.addEventListener("submit", handleSubmit);
 
-    trackEvent("visit");
+    startAnalyticsSession();
+    window.setInterval(() => {
+      if (!document.hidden) syncSessionDuration();
+    }, 15000);
+    document.addEventListener("visibilitychange", syncSessionDuration);
+    window.addEventListener("pagehide", syncSessionDuration);
     populateVoices();
     if ("speechSynthesis" in window) {
       window.speechSynthesis.addEventListener("voiceschanged", populateVoices);
