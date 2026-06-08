@@ -1,16 +1,18 @@
 const sharedRequirements = {
   machines: [
-    ["Hydra 9 Gen2", "1900 × 1045 × 1035 mm", '74.8" × 41.1" × 40.7"', "独立落地旗舰平台"],
-    ["Cobra 10", "1680 × 1090 × 940 mm", '66" × 43" × 37"', "独立落地工作室平台"],
-    ["XRF", "1085 × 725 × 268 mm", '43.2" × 28.5" × 10.5"', "桌面机 / 综合工作台最大"],
-    ["VertiGo", "630 × 550 × 710 mm", '24.8" × 21.65" × 27.95"', "桌面机 / 杯壶与旋转雕刻"],
-    ["Y Series", "桌面机", "体量小于 XRF", "综合工作台"],
-    ["Viper", "桌面机", "体量小于 XRF", "综合工作台"],
-    ["GALVO FLEX", "桌面机", "体量小于 XRF", "综合工作台"]
+    ["Hydra 9 Gen2", "1900 × 1045 × 1035 mm", '74.8" × 41.1" × 40.7"', "独立落地旗舰平台", "Freestanding flagship platform"],
+    ["Cobra 10", "1680 × 1090 × 940 mm", '66" × 43" × 37"', "独立落地工作室平台", "Freestanding workshop platform"],
+    ["XRF", "1085 × 725 × 268 mm", '43.2" × 28.5" × 10.5"', "桌面机 / 综合工作台最大", "Largest unit on desktop bench"],
+    ["VertiGo", "630 × 550 × 710 mm", '24.8" × 21.65" × 27.95"', "桌面机 / 杯壶与旋转雕刻", "Desktop tumbler and rotary engraving"],
+    ["Y Series", "桌面机 / Desktop Machine", "体量小于 XRF / Smaller than XRF", "综合工作台", "Desktop Innovation Bench"],
+    ["Viper", "桌面机 / Desktop Machine", "体量小于 XRF / Smaller than XRF", "综合工作台", "Desktop Innovation Bench"],
+    ["GALVO FLEX", "桌面机 / Desktop Machine", "体量小于 XRF / Smaller than XRF", "综合工作台", "Desktop Innovation Bench"]
   ],
   samples: {
     large: ["36–48 英寸木雕地图", "多层木质艺术墙板", "大型企业 Logo", "亚克力灯牌", "商业标识牌"],
-    small: ["皮革钱包", "帽牌 / 皮革补丁", "金属铭牌", "工业标签", "奖杯 / 奖牌", "玻璃杯", "保温杯", "钥匙扣", "礼品牌"]
+    largeEn: ["36–48 in engraved wood map", "Layered wood art panel", "Large corporate logo", "Illuminated acrylic sign", "Commercial signage"],
+    small: ["皮革钱包", "帽牌 / 皮革补丁", "金属铭牌", "工业标签", "奖杯 / 奖牌", "玻璃杯", "保温杯", "钥匙扣", "礼品牌"],
+    smallEn: ["Leather wallet", "Hat badge / leather patch", "Metal nameplate", "Industrial tag", "Trophy / medal", "Glassware", "Tumbler", "Keychain", "Gift tag"]
   },
   materials: ["WOOD", "LEATHER", "METAL", "ACRYLIC", "GLASS", "TUMBLERS"],
   story: ["机器", "加工过程", "成品", "商业价值"]
@@ -39,6 +41,18 @@ const proposalData = [
     floorPlan: ["40 ft 宽 × 10 ft 深", "接待台", "电视机", "Hydra 9 Gen2 独立平台", "Cobra 10 独立平台", "5 款桌面机连续工作台", "样品桌", "开放客户动线"],
     strengths: ["采购与运输成本最低", "搭建速度快，常规展具容易获得", "适合首次测试展会效果"],
     risks: ["视觉质感相对基础", "需用连续大画面避免零散感", "大型样品需要提前规划运输"],
+    en: {
+      budget: "Low budget / Fast deployment / First-time exhibitor",
+      concept: "A clean, credible U.S. industrial brand presentation built with fabric backwalls, printed graphics and portable fixtures. It controls cost while presenting all seven machines, applications and a clear sales journey.",
+      zones: ["U.S. Machine Company", "Largest freestanding hero display", "Second-largest freestanding display", "XRF + VertiGo + Y Series + Viper + GALVO FLEX", "Drinkware, gifts, nameplates and compact samples"],
+      machineDisplay: "Hydra 9 Gen2 and Cobra 10 use two freestanding floor platforms. XRF, VertiGo, Y Series, Viper and GALVO FLEX share one continuous desktop-machine bench with integrated storage, power management and a slim red light strip.",
+      video: "A TV beside the backwall or reception counter loops cutting, engraving sparks, customer cases and finished products.",
+      salesArea: "A front-left reception counter includes QR codes, brochures, business cards and sample boxes, supported by both large and small finished samples.",
+      floorPlan: ["40 ft W × 10 ft D", "Reception counter", "TV", "Hydra 9 Gen2 platform", "Cobra 10 platform", "Five-machine desktop bench", "Sample table", "Open visitor flow"],
+      strengths: ["Lowest purchasing and shipping cost", "Fast setup with readily available fixtures", "Ideal for testing a first exhibition"],
+      risks: ["More basic visual finish", "Requires continuous graphics to avoid fragmentation", "Large samples require advance shipping planning"]
+      ,reuse: "Medium"
+    },
     reuse: "中"
   },
   {
@@ -64,6 +78,18 @@ const proposalData = [
     floorPlan: ["40 ft 宽 × 10 ft 深", "SEG 灯箱背墙", "Hydra 9 Gen2 独立岛台", "Cobra 10 独立岛台", "5 款桌面机 Performance Bench", "电视机", "样品墙", "Lead Capture Bar", "开放客户动线"],
     strengths: ["品牌感与销售转化平衡最好", "模块化结构可反复使用", "机器、材料和商业结果关系清晰"],
     risks: ["需提前确认电力与灯箱功率", "搭建成本高于基础方案", "岛台尺寸必须按真机核算"],
+    en: {
+      budget: "Mid-range budget / Recommended / Formal U.S. market entry",
+      concept: "SEG lightbox walls and product islands create a clear performance laboratory: easy to understand like an Apple Store, restrained like a Tesla Gallery, and reusable across multiple exhibitions.",
+      zones: ["ONELASER Performance Lab", "Largest central flagship island", "Second-largest workshop island", "XRF + VertiGo + Y Series + Viper + GALVO FLEX", "Six-category material sample wall", "Y Series, Viper and GALVO FLEX with application samples"],
+      machineDisplay: "Hydra 9 Gen2 and Cobra 10 retain individual product islands. The five desktop machines share one Performance Bench; XRF is the largest desktop unit, while every machine receives its own specification card, application samples and concealed wiring.",
+      video: "A prominent screen near the brand zone or sample wall shows machining details, U.S. workshops, customer cases and commercial applications.",
+      salesArea: "A front-left Lead Capture Bar includes stools, iPad, QR codes, literature and sample boxes. The sample wall is organized by material.",
+      floorPlan: ["40 ft W × 10 ft D", "SEG lightbox backwall", "Hydra 9 Gen2 island", "Cobra 10 island", "Five-machine Performance Bench", "TV", "Sample wall", "Lead Capture Bar", "Open visitor flow"],
+      strengths: ["Best balance of brand impact and conversion", "Reusable modular structure", "Clear machine-to-material-to-business-result story"],
+      risks: ["Power and lightbox loads must be confirmed", "Higher setup cost than Budget Booth", "Island dimensions must use actual machine measurements"]
+      ,reuse: "High"
+    },
     reuse: "高"
   },
   {
@@ -89,6 +115,18 @@ const proposalData = [
     floorPlan: ["40 ft 宽 × 10 ft 深", "巨型门头", "Hydra 9 Gen2 英雄平台", "Cobra 10 英雄平台", "5 款桌面机 Innovation Bench", "75/85 英寸视频墙", "Material Library", "Consultation Bar", "开放客户动线"],
     strengths: ["品牌冲击力和媒体传播力最强", "适合全产品展示与经销商洽谈", "完整呈现机器到商业结果"],
     risks: ["成本、运输和电力要求最高", "需严格遵守 inline booth 高度与遮挡规定", "定制结构复用灵活性较低"],
+    en: {
+      budget: "High budget / Full product lineup / Dealer recruitment",
+      concept: "A true high-performance garage laboratory built inside a 10×40 ft inline booth. A monumental header, hero platforms, material library and video wall communicate the path from workshop production to scalable business.",
+      zones: ["ONELASER / U.S. Machine Company", "Largest central hero platform", "Second hero platform", "XRF + VertiGo + Y Series + Viper + GALVO FLEX", "Drawer-based materials and finished products", "Dedicated illuminated nameplates and applications for Y Series, Viper and GALVO FLEX"],
+      machineDisplay: "Hydra 9 Gen2 and Cobra 10 occupy two freestanding hero platforms. The five desktop machines are integrated into a Desktop Innovation Bench with a solid dark countertop, floating red light, drawer storage, concealed power and an individual illuminated nameplate for each machine.",
+      video: "A 75- or 85-inch screen shows close-up processing, sparks, deliveries, U.S. workshops, support services and real finished products.",
+      salesArea: "A Consultation Bar on the left includes stools, coffee, iPad, samples and advisor workspace. A drawer-based Material Library sits on the right.",
+      floorPlan: ["40 ft W × 10 ft D", "Monumental header", "Hydra 9 Gen2 hero platform", "Cobra 10 hero platform", "Five-machine Innovation Bench", "75/85-inch video wall", "Material Library", "Consultation Bar", "Open visitor flow"],
+      strengths: ["Strongest brand and media impact", "Ideal for full-line presentation and dealer meetings", "Complete machine-to-business-result narrative"],
+      risks: ["Highest cost, freight and power requirements", "Must comply with inline-booth height and sightline rules", "Custom structures offer less reuse flexibility"]
+      ,reuse: "Medium"
+    },
     reuse: "中"
   }
 ];
@@ -100,10 +138,10 @@ const card = (label, title, copy = "") => `
     ${copy ? `<p>${copy}</p>` : ""}
   </div>`;
 
-const listPanel = (title, items, accent = false) => `
+const listPanel = (title, items, accent = false, englishItems = []) => `
   <div class="proposal-panel">
     <h4 class="${accent ? "proposal-red" : ""}">${title}</h4>
-    <ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul>
+    <ul>${items.map((item, index) => `<li>${item}${englishItems[index] ? `<span class="en-copy">${englishItems[index]}</span>` : ""}</li>`).join("")}</ul>
   </div>`;
 
 const renderMachineScale = () => `
@@ -134,9 +172,9 @@ const renderMachineScale = () => `
 
 const renderMachineSpecs = () => `
   <div class="machine-spec-grid">
-    ${sharedRequirements.machines.map(([name, metric, imperial, placement]) => `
+    ${sharedRequirements.machines.map(([name, metric, imperial, placement, placementEn]) => `
       <div class="machine-spec-card">
-        <div class="proposal-eyebrow">${placement}</div>
+        <div class="proposal-eyebrow">${placement}<span class="en-copy">${placementEn}</span></div>
         <strong>${name}</strong>
         <p>${metric}</p>
         <small>${imperial}</small>
@@ -156,7 +194,7 @@ const renderProposal = (proposal) => `
       <div>
         <div class="proposal-kicker">${proposal.name}</div>
         <h3>${proposal.title}</h3>
-        <p>${proposal.budget}</p>
+        <p>${proposal.budget}<span class="en-inline">${proposal.en.budget}</span></p>
       </div>
       <div class="proposal-impact">
         <span>${proposal.renderShare}</span>
@@ -165,57 +203,57 @@ const renderProposal = (proposal) => `
     </div>
 
     <div class="proposal-concept">
-      <div><span>CONCEPT</span><p>${proposal.concept}</p></div>
+      <div><span>CONCEPT / 方案理念</span><p>${proposal.concept}<span class="en-copy">${proposal.en.concept}</span></p></div>
       ${renderStory()}
     </div>
 
     <section class="proposal-section">
-      <div class="proposal-section-title"><span>01</span><h4>空间与视觉构成</h4></div>
+      <div class="proposal-section-title"><span>01</span><h4>空间与视觉构成 / Spatial & Visual System</h4></div>
       <div class="proposal-chip-row">${proposal.style.map((item) => `<span>${item}</span>`).join("")}</div>
       <div class="proposal-grid proposal-grid-4">${proposal.message.map((item, index) => card(`MESSAGE 0${index + 1}`, item)).join("")}</div>
     </section>
 
     <section class="proposal-section">
-      <div class="proposal-section-title"><span>02</span><h4>大机独立平台 + 桌面机综合工作台</h4></div>
+      <div class="proposal-section-title"><span>02</span><h4>大机独立平台 + 桌面机综合工作台 / Floor Platforms + Desktop Bench</h4></div>
       ${renderMachineScale()}
-      <p class="proposal-note">${proposal.machineDisplay}</p>
+      <p class="proposal-note">${proposal.machineDisplay}<span class="en-copy">${proposal.en.machineDisplay}</span></p>
       ${renderMachineSpecs()}
     </section>
 
     <section class="proposal-section">
-      <div class="proposal-section-title"><span>03</span><h4>展位分区</h4></div>
-      <div class="proposal-grid proposal-grid-3">${proposal.zones.map(([title, copy], index) => card(`ZONE ${String(index + 1).padStart(2, "0")}`, title, copy)).join("")}</div>
+      <div class="proposal-section-title"><span>03</span><h4>展位分区 / Booth Zoning</h4></div>
+      <div class="proposal-grid proposal-grid-3">${proposal.zones.map(([title, copy], index) => card(`ZONE ${String(index + 1).padStart(2, "0")}`, title, `${copy}<span class="en-copy">${proposal.en.zones[index]}</span>`)).join("")}</div>
     </section>
 
     <section class="proposal-section proposal-two-col">
       <div class="proposal-panel proposal-media-panel">
         <h4>VIDEO / SALES AREA</h4>
-        <p><b>视频：</b>${proposal.video}</p>
-        <p><b>销售区：</b>${proposal.salesArea}</p>
+        <p><b>视频 / Video：</b>${proposal.video}<span class="en-copy">${proposal.en.video}</span></p>
+        <p><b>销售区 / Sales Area：</b>${proposal.salesArea}<span class="en-copy">${proposal.en.salesArea}</span></p>
       </div>
       <div class="proposal-panel">
         <h4>TOP VIEW FLOOR PLAN</h4>
-        <div class="floor-plan-tags">${proposal.floorPlan.map((item) => `<span>${item}</span>`).join("")}</div>
+        <div class="floor-plan-tags">${proposal.floorPlan.map((item, index) => `<span>${item}<small>${proposal.en.floorPlan[index]}</small></span>`).join("")}</div>
       </div>
     </section>
 
     <section class="proposal-section">
-      <div class="proposal-section-title"><span>04</span><h4>成品与材料矩阵</h4></div>
+      <div class="proposal-section-title"><span>04</span><h4>成品与材料矩阵 / Outcomes & Materials</h4></div>
       <div class="material-strip">${sharedRequirements.materials.map((item) => `<span>${item}</span>`).join("")}</div>
       <div class="proposal-two-col">
-        ${listPanel("大型视觉样品", sharedRequirements.samples.large)}
-        ${listPanel("中小型成交样品", sharedRequirements.samples.small)}
+        ${listPanel("大型视觉样品 / LARGE HERO SAMPLES", sharedRequirements.samples.large, false, sharedRequirements.samples.largeEn)}
+        ${listPanel("中小型成交样品 / SALES SAMPLES", sharedRequirements.samples.small, false, sharedRequirements.samples.smallEn)}
       </div>
     </section>
 
     <section class="proposal-section proposal-two-col">
-      ${listPanel("STRENGTHS", proposal.strengths)}
-      ${listPanel("RISKS / CHECKS", proposal.risks, true)}
+      ${listPanel("优势 / STRENGTHS", proposal.strengths, false, proposal.en.strengths)}
+      ${listPanel("风险检查 / RISKS & CHECKS", proposal.risks, true, proposal.en.risks)}
     </section>
 
     <div class="proposal-footer">
-      <span>REUSABILITY</span><strong>${proposal.reuse}</strong>
-      <p>统一要求：Hydra 9 Gen2 与 Cobra 10 独立落地展示；XRF、VertiGo、Y Series、Viper、GALVO FLEX 统一放在连续桌面机工作台；不贴墙，不缺少电视和平面图，Logo 与 Slogan 必须准确。</p>
+      <span>复用性 / REUSABILITY</span><strong>${proposal.reuse} / ${proposal.en.reuse}</strong>
+      <p>统一要求：Hydra 9 Gen2 与 Cobra 10 独立落地展示；XRF、VertiGo、Y Series、Viper、GALVO FLEX 统一放在连续桌面机工作台；不贴墙，不缺少电视和平面图，Logo 与 Slogan 必须准确。<span class="en-copy">Hydra 9 Gen2 and Cobra 10 are displayed independently. The five desktop machines share one continuous bench. Keep all machines away from the wall and ensure the TV, floor plan, Logo and Slogan are accurate.</span></p>
     </div>
   </div>`;
 
