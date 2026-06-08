@@ -375,7 +375,7 @@ th .secondary-zh-copy {
 
 .placement-system {
   display: grid;
-  grid-template-columns: 1.15fr 1fr 2.8fr;
+  grid-template-columns: 1.9fr 1.68fr 4.2fr;
   gap: 0.65rem;
   align-items: end;
   border: 1px solid #202020;
@@ -385,6 +385,35 @@ th .secondary-zh-copy {
 
 .standalone-platform {
   text-align: center;
+}
+
+.scale-rule {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 1rem;
+  align-items: baseline;
+  margin-bottom: 0.65rem;
+  border-left: 3px solid var(--onelaser-red);
+  background: linear-gradient(90deg, rgba(231, 49, 14, 0.12), transparent);
+  padding: 0.75rem 0.9rem;
+}
+
+.scale-rule strong {
+  color: #fff;
+  font: 700 11px monospace;
+  letter-spacing: 0.12em;
+}
+
+.scale-rule span {
+  color: #aaa;
+  font-size: 11px;
+}
+
+.scale-rule small {
+  grid-column: 1 / -1;
+  color: var(--onelaser-red);
+  font: 9px monospace;
+  letter-spacing: 0.09em;
 }
 
 .machine-silhouette {
@@ -397,16 +426,21 @@ th .secondary-zh-copy {
   font-weight: 700;
 }
 
-.hydra-machine { height: 120px; }
-.cobra-machine { height: 98px; }
+.hydra-machine {
+  aspect-ratio: 1900 / 1035;
+  width: 100%;
+}
 
-.standalone-platform::after {
-  content: "";
-  display: block;
-  height: 12px;
-  border: 1px solid #333;
-  border-bottom: 3px solid var(--onelaser-red);
-  background: #151515;
+.cobra-machine {
+  aspect-ratio: 1680 / 940;
+  width: 100%;
+}
+
+.floor-line {
+  height: 5px;
+  border-top: 1px solid #555;
+  background: linear-gradient(90deg, transparent 4%, var(--onelaser-red) 4% 96%, transparent 96%);
+  box-shadow: 0 5px 18px rgba(231, 49, 14, 0.25);
 }
 
 .standalone-platform strong,
@@ -441,7 +475,7 @@ th .secondary-zh-copy {
 
 .bench-machines {
   display: grid;
-  grid-template-columns: 1.35fr 0.95fr repeat(3, 0.72fr);
+  grid-template-columns: 1.085fr 0.63fr 0.54fr 0.5fr 0.46fr;
   gap: 0.45rem;
   align-items: end;
   min-width: 520px;
@@ -466,10 +500,26 @@ th .secondary-zh-copy {
   font-weight: 400;
 }
 
-.xrf-machine { height: 72px; }
-.vertigo-machine { height: 54px; }
+.xrf-machine {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1085 / 268;
+  font-size: 8px;
+}
 
-.compact-machine { height: 46px; font-size: 9px; }
+.xrf-machine small {
+  font-size: 7px;
+}
+.vertigo-machine {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 630 / 710;
+}
+
+.compact-machine { font-size: 9px; }
+.y-machine { height: 48px; }
+.viper-machine { height: 42px; }
+.galvo-machine { height: 36px; }
 
 .bench-top {
   min-width: 520px;
