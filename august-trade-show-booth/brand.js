@@ -87,9 +87,9 @@ const bilingualCopy = {
   "最推荐": ["MOST RECOMMENDED", "最推荐"],
   "重点展会使用": ["FLAGSHIP EVENTS", "适合重点展会"],
   "04 · RECOMMENDED": ["04 · RECOMMENDED", "04 · 最终推荐"],
-  "最终推荐：方案二": ["FINAL RECOMMENDATION: OPTION 02", "最终推荐：方案二"],
+  "最终选定：C02 方案": ["FINAL SELECTED OPTION: C02", "最终选定：C02 方案"],
   "10×40 ft 长条展位，最有效的是用一整面高质量背墙，把品牌、产品、样品和销售动线讲清楚。": ["For a 10×40 ft inline booth, one high-quality backwall communicates the brand, products, samples and sales journey most effectively.", "对于 10×40 英尺长条展位，一整面高质量背墙最能清晰呈现品牌、产品、样品和销售动线。"],
-  "方案二 · ONELASER Performance Lab": ["OPTION 02 · ONELASER PERFORMANCE LAB", "方案二 · ONELASER 性能实验室"],
+  "C02 · ONELASER Final Booth Direction": ["C02 · ONELASER FINAL BOOTH DIRECTION", "C02 · ONELASER 最终展位方案"],
   "10×40 ft 是长条展位，不适合花太多钱做复杂三维结构。最有效的是用一整面高质量背墙，把品牌、产品、样品和销售动线讲清楚。": ["A 10×40 ft inline booth does not need an expensive, complex 3D build. A premium continuous backwall communicates the brand, products, samples and sales journey with greater efficiency.", "10×40 英尺属于长条展位，不必投入复杂三维结构；连续高质量背墙能更高效地讲清品牌、产品、样品和销售动线。"],
   "40 ft SEG 灯箱背墙": ["40 FT SEG LIGHTBOX BACKWALL", "40 英尺 SEG 灯箱背墙"],
   "Hydra / Cobra 10 英雄机位": ["HYDRA 9 GEN2 / COBRA 10 HERO POSITIONS", "Hydra 9 Gen2 / Cobra 10 英雄机位"],
@@ -465,8 +465,24 @@ const createLightbox = () => {
   return lightbox;
 };
 
+const renderFinalSelected = () => `
+  <section class="final-selected reveal visible" aria-label="Final selected C02 booth plan">
+    <div class="final-selected-copy">
+      <span>FINAL SELECTED OPTION</span>
+      <h3>C02 · ONELASER 10×40 Booth</h3>
+      <p>Selected visual direction with fabrication sizing notes, material guidance and process annotations.</p>
+    </div>
+    <img src="assets/final/c02-selected.webp" alt="C02 final selected ONELASER 10×40 booth rendering" loading="lazy" decoding="async">
+    <a class="final-pdf-link" href="assets/final/fabrication-spec-v1.pdf" target="_blank" rel="noopener">
+      <strong>VIEW FABRICATION SPEC PDF</strong>
+      <span>制作尺寸深化建议 / 材质与工艺标注</span>
+    </a>
+  </section>`;
+
 document.addEventListener("DOMContentLoaded", () => {
   document.body.innerHTML = document.body.innerHTML
+    .replaceAll("最终推荐：方案二", "最终选定：C02 方案")
+    .replaceAll("方案二 · ONELASER Performance Lab", "C02 · ONELASER Final Booth Direction")
     .replaceAll("SEG 灯箱背墙 + 产品岛台", "SEG 灯箱背墙 + 直接落地机位 + 桌面工作台")
     .replaceAll("最右 · 新品预留", "最右 · 桌面产品区")
     .replaceAll("模块化展示台 + 立牌 + 样品托盘，后期换产品不用重做", "连续桌面机工作台 + 独立铭牌 + 应用样品，统一展示 Y Series、Viper、GALVO FLEX")
@@ -613,6 +629,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       selectProposal(1);
     }
+  }
+
+  const recommendedSection = Array.from(sections).find((section) => section.textContent.includes("RECOMMENDED"));
+  if (recommendedSection && !document.querySelector(".final-selected")) {
+    recommendedSection.insertAdjacentHTML("beforeend", renderFinalSelected());
   }
 
   applyBilingualHierarchy(document.body);

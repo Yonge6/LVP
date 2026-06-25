@@ -23,6 +23,10 @@ body > .grid-bg > header .secondary-zh-copy {
   display: none;
 }
 
+body > .grid-bg > footer .secondary-zh-copy {
+  display: none;
+}
+
 .brand-logo {
   display: block;
   width: min(76vw, 640px);
@@ -855,6 +859,69 @@ th .secondary-zh-copy {
 .proposal-footer p {
   margin-left: auto;
   text-align: right;
+}
+
+.final-selected {
+  margin-top: 2rem;
+  border: 1px solid #242424;
+  background: linear-gradient(145deg, #111, #080808);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.final-selected-copy span {
+  color: var(--onelaser-red);
+  font: 10px monospace;
+  letter-spacing: 0.16em;
+}
+
+.final-selected-copy h3 {
+  margin-top: 0.35rem;
+  color: #fff;
+  font-size: clamp(1.35rem, 3vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.final-selected-copy p {
+  margin: 0.35rem 0 1rem;
+  color: #999;
+  font-size: 13px;
+}
+
+.final-selected img {
+  display: block;
+  width: 100%;
+  border: 1px solid #242424;
+  background: #050505;
+}
+
+.final-pdf-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.8rem;
+  border: 1px solid rgba(231, 49, 14, 0.35);
+  background: rgba(231, 49, 14, 0.08);
+  padding: 0.9rem 1rem;
+  color: #fff;
+  text-decoration: none;
+}
+
+.final-pdf-link strong {
+  color: var(--onelaser-red);
+  font: 700 11px monospace;
+  letter-spacing: 0.12em;
+}
+
+.final-pdf-link span {
+  color: #888;
+  font-size: 12px;
+}
+
+.final-pdf-link:hover {
+  border-color: var(--onelaser-red);
+  background: rgba(231, 49, 14, 0.14);
 }
 
 @keyframes proposal-enter {
